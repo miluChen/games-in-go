@@ -19,13 +19,12 @@ const (
 )
 
 var gameState GameState
-var startScene StartScene
-var exitScene ExitScene
+var startScene, exitScene ChoiceScene
 
 func initialize(win *pixelgl.Window) {
 	gameState = Start
-	startScene = *newStartScene(pixel.V(300, 500), 7)
-	exitScene = *newExitScene(pixel.V(300, 500), 7)
+	startScene = *newChoiceScene(pixel.V(300, 500), 7, []string{"START", "EXIT"}, []GameState{Play, Exit})
+	exitScene = *newChoiceScene(pixel.V(300, 500), 7, []string{"RESUME", "EXIT"}, []GameState{Play, Exit})
 }
 
 func run() {

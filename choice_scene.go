@@ -10,7 +10,7 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
-type StartScene struct {
+type ChoiceScene struct {
 	txt     *text.Text
 	rects   []pixel.Rect
 	actions []GameState
@@ -18,9 +18,8 @@ type StartScene struct {
 	imds    []*imdraw.IMDraw
 }
 
-func newStartScene(orig pixel.Vec, scale float64) *StartScene {
-	scene := StartScene{actions: []GameState{Start, TryExit}, scale: scale}
-	msgs := []string{"START", "EXIT"}
+func newChoiceScene(orig pixel.Vec, scale float64, msgs []string, states []GameState) *ChoiceScene {
+	scene := ChoiceScene{actions: states, scale: scale}
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
 	scene.txt = text.New(orig, atlas)
@@ -41,7 +40,7 @@ func newStartScene(orig pixel.Vec, scale float64) *StartScene {
 	return &scene
 }
 
-func (scene *StartScene) draw(win *pixelgl.Window) {
+func (scene *ChoiceScene) draw(win *pixelgl.Window) {
 	scene.txt.Draw(win, pixel.IM.Scaled(scene.txt.Orig, scene.scale))
 	// draw bounding box for "start" and "exit" messages
 	for _, imd := range scene.imds {
@@ -49,7 +48,7 @@ func (scene *StartScene) draw(win *pixelgl.Window) {
 	}
 }
 
-func (scene *StartScene) action(win *pixelgl.Window) GameState {
+func (scene *ChoiceScene) action(win *pixelgl.Window) GameState {
 	if win.JustPressed(pixelgl.MouseButtonLeft) {
 		// retrieve cursor position and check which action to take
 		cursor := win.MousePosition()
