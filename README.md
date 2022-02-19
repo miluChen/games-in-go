@@ -1,1 +1,1 @@
-# pixel-maze
+# games-in-go
