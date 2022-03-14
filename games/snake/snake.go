@@ -1,7 +1,6 @@
 package snake
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -12,16 +11,7 @@ import (
 	"golang.org/x/image/colornames"
 )
 
-type GameState int
 type Direction int
-
-const (
-	Start GameState = iota
-	Play
-	TryExit
-	Exit
-	NOOP
-)
 
 const (
 	North Direction = iota
@@ -46,14 +36,24 @@ type SnakeGame struct {
 	lastMoveTime time.Time // last timestamp the snake moved
 }
 
-var directions map[Direction][]float64
+var directions = map[Direction][]float64{
+	North: {0, 1},
+	East:  {1, 0},
+	South: {0, -1},
+	West:  {-1, 0},
+}
 
-func init() {
-	directions = make(map[Direction][]float64)
-	directions[North] = []float64{0, 1}
-	directions[East] = []float64{1, 0}
-	directions[South] = []float64{0, -1}
-	directions[West] = []float64{-1, 0}
+func newSnakeGame() *SnakeGame {
+	snakeGame := &SnakeGame{
+		alive:        true,
+		dir:          East,
+		body:         []pixel.Vec{pixel.V(0, 0)},
+		action:       East,
+		lastMoveTime: time.Now(),
+		freq:         5,
+	}
+	snakeGame.generateApple()
+	return snakeGame
 }
 
 // draw the snake and apple in window
@@ -76,9 +76,7 @@ func (s *SnakeGame) draw(win *pixelgl.Window) {
 	imd.Push(pixel.V((s.apple.X+1)*Unit, (s.apple.Y+1)*Unit))
 	imd.Rectangle(0)
 
-	win.Clear(colornames.Aliceblue)
 	imd.Draw(win)
-	win.Update()
 }
 
 // snake moves
@@ -148,82 +146,4 @@ func (s *SnakeGame) generateApple() {
 // check whether the snake is in an invalid position
 func (s *SnakeGame) dead(win *pixelgl.Window) bool {
 	return !s.alive
-}
-
-var gameState GameState
-var startScene, exitScene ChoiceScene
-
-func initialize(win *pixelgl.Window) {
-	gameState = Start
-	startScene = *newChoiceScene(pixel.V(300, 500), 7, []string{"START", "EXIT"}, []GameState{Play, Exit})
-	exitScene = *newChoiceScene(pixel.V(300, 500), 7, []string{"RESUME", "EXIT"}, []GameState{Play, Exit})
-}
-
-func run() {
-	cfg := pixelgl.WindowConfig{
-		Title:  "snake",
-		Bounds: pixel.R(0, 0, 1024, 768),
-		VSync:  true,
-	}
-	win, err := pixelgl.NewWindow(cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	initialize(win)
-
-	snakeGame := SnakeGame{
-		alive:        true,
-		dir:          East,
-		body:         []pixel.Vec{pixel.V(0, 0)},
-		action:       East,
-		lastMoveTime: time.Now(),
-		freq:         5,
-	}
-	snakeGame.generateApple()
-
-	for !win.Closed() && gameState != Exit {
-		win.Clear(colornames.Black)
-		if win.JustPressed(pixelgl.MouseButtonLeft) {
-			win.SetTitle(fmt.Sprintf("%f %f", win.MousePosition().X, win.MousePosition().Y))
-		}
-		if win.JustPressed(pixelgl.KeyEscape) {
-			if gameState != Start {
-				gameState = TryExit
-			}
-		}
-		state := NOOP
-		switch gameState {
-		case Start:
-			startScene.draw(win)
-			state = startScene.action(win)
-		case Play:
-			if win.Pressed(pixelgl.KeyLeft) {
-				snakeGame.action = West
-			} else if win.Pressed(pixelgl.KeyRight) {
-				snakeGame.action = East
-			} else if win.Pressed(pixelgl.KeyDown) {
-				snakeGame.action = South
-			} else if win.Pressed(pixelgl.KeyUp) {
-				snakeGame.action = North
-			}
-			snakeGame.move()
-			if snakeGame.dead(win) {
-				fmt.Println("snake is dead")
-			}
-			snakeGame.draw(win)
-		case TryExit:
-			exitScene.draw(win)
-			state = exitScene.action(win)
-		default:
-		}
-		if state != NOOP {
-			gameState = state
-		}
-		win.Update()
-	}
-}
-
-func Run() {
-	pixelgl.Run(run)
 }

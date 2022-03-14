@@ -1,4 +1,4 @@
-package menus
+package snake
 
 import (
 	"fmt"
@@ -11,25 +11,29 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
+/* ================ button definition ================ */
 type Button interface {
 	draw(*pixelgl.Window, bool)
 	handle()
+	disable()
+	enable()
 }
 
 type RectButton struct {
-	imd     *imdraw.IMDraw
-	rect    pixel.Rect
-	msg     string
-	handler func()
+	imd      *imdraw.IMDraw
+	rect     pixel.Rect
+	msg      string
+	disabled bool
+	handler  func()
 }
 
-func newRectButton(rect pixel.Rect, msg string, handler func()) *RectButton {
+func newRectButton(rect pixel.Rect, msg string, disabled bool, handler func()) *RectButton {
 	imd := imdraw.New(nil)
 	imd.Push(rect.Min)
 	imd.Push(rect.Max)
 	imd.Rectangle(2)
 
-	return &RectButton{imd: imd, rect: rect, msg: msg, handler: handler}
+	return &RectButton{imd: imd, rect: rect, msg: msg, disabled: disabled, handler: handler}
 }
 
 // draw draws the button on win and highlights it if it's chosen
@@ -39,20 +43,34 @@ func (b *RectButton) draw(win *pixelgl.Window, highlight bool) {
 	txt := text.New(b.rect.Center(), atlas)
 	txt.Dot.X -= txt.BoundsOf(b.msg).W() / 2
 	txt.Dot.Y -= txt.BoundsOf(b.msg).H() / 4
-	// highlight the text if it's chosen
-	if highlight {
-		txt.Color = colornames.White
+	if b.disabled {
+		txt.Color = colornames.Gray
 	} else {
-		txt.Color = colornames.Grey
+		// highlight the text if it's chosen
+		if highlight {
+			txt.Color = colornames.Blue
+		} else {
+			txt.Color = colornames.White
+		}
 	}
 	fmt.Fprint(txt, b.msg)
 
-	txt.Draw(win, pixel.IM)
 	b.imd.Draw(win)
+	txt.Draw(win, pixel.IM)
 }
 
 func (b *RectButton) handle() {
-	b.handler()
+	if !b.disabled {
+		b.handler()
+	}
+}
+
+func (b *RectButton) disable() {
+	b.disabled = true
+}
+
+func (b *RectButton) enable() {
+	b.disabled = false
 }
 
 /* ================ button names ================ */
@@ -65,38 +83,49 @@ const (
 	restartButtonName     = "Restart"
 	retryButtonName       = "Retry"
 	backButtonName        = "Back"
+	pausedButtonName      = "Paused"
+	mainMenuButtonName    = "Main Menu"
 )
 
 /* ================ callbacks for buttons ================ */
 func newGameHandler() {
-	fmt.Println("new game handler")
-	
+	startGame()
 }
 
 func leaderboardHandler() {
-	fmt.Println("leaderboard handler")
+	menuStack = append(menuStack, leaderboardMenu)
 }
 
 func optionsHandler() {
-	fmt.Println("option handler")
+	menuStack = append(menuStack, optionsMenu)
 }
 
 func exitHandler() {
-	fmt.Println("exit handler")
+	gameState = Exit
 }
 
 func resumeHandler() {
-	fmt.Println("resume handler")
+	menuStack = nil
+	currentScene.resume()
 }
 
 func restartHandler() {
-	fmt.Println("restart handler")
+	startGame()
 }
 
 func retryHandler() {
-	fmt.Println("retry handler")
+	startGame()
 }
 
 func backHandler() {
-	fmt.Println("back handler")
+	menuStack[len(menuStack)-1].reset()
+	menuStack = menuStack[0 : len(menuStack)-1]
+}
+
+func mainMenuHandler() {
+	// user can not go back after you go to main menu, so we can clear the menu stack here
+	clearMenuStack()
+	menuStack = append(menuStack, mainMenu)
+	// remove current scene
+	currentScene = nil
 }
