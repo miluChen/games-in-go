@@ -1,6 +1,7 @@
 package snake
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -8,7 +9,9 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/faiface/pixel/text"
 	"golang.org/x/image/colornames"
+	"golang.org/x/image/font/basicfont"
 )
 
 type Direction int
@@ -20,9 +23,13 @@ const (
 	West
 )
 
-const Unit = 10   // size of a square
-const Width = 10  // width of the grid as in number of units
-const Height = 10 // height of the grid as in number of units
+const (
+	Unit     = 10 // size of a square
+	Width    = 10 // width of the grid as in number of units
+	Height   = 10 // height of the grid as in number of units
+	MaxLevel = 10 // max game level
+	AppleCnt = 15 // number of apples to advance to next level
+)
 
 type SnakeGame struct {
 	alive bool        // whether the snake is still alive
@@ -31,6 +38,7 @@ type SnakeGame struct {
 
 	apple        pixel.Vec // position of the apple
 	score        int       // game score, as in number apples eaten
+	level        int       // game level
 	freq         int64     // the number of moves the snake can make per second
 	action       Direction // actions for changing direction
 	lastMoveTime time.Time // last timestamp the snake moved
@@ -43,21 +51,41 @@ var directions = map[Direction][]float64{
 	West:  {-1, 0},
 }
 
+// mapping from game level to freq, i.e. number of moves the snake can make per second
+var frequencies = map[int]int64{
+	1:  1,
+	2:  2,
+	3:  3,
+	4:  4,
+	5:  5,
+	6:  6,
+	7:  7,
+	8:  8,
+	9:  9,
+	10: 10,
+}
+
 func newSnakeGame() *SnakeGame {
 	snakeGame := &SnakeGame{
 		alive:        true,
-		dir:          East,
-		body:         []pixel.Vec{pixel.V(0, 0)},
 		action:       East,
 		lastMoveTime: time.Now(),
-		freq:         5,
 	}
+	snakeGame.setLevel(1)
+	snakeGame.resetSnake()
 	snakeGame.generateApple()
 	return snakeGame
 }
 
 // draw the snake and apple in window
 func (s *SnakeGame) draw(win *pixelgl.Window) {
+	// draw level txt
+	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
+	txt := text.New(pixel.V(100, 700), atlas)
+	txt.Color = colornames.Black
+	fmt.Fprintf(txt, "Level %d", s.level)
+	// position level txt in top center
+	txt.Draw(win, pixel.IM.Moved(win.Bounds().Center().Sub(txt.Bounds().Center()).Add(pixel.V(0, win.Bounds().H()/2-txt.Bounds().H()/2))))
 	// draw snake body and head
 	imd := imdraw.New(nil)
 	imd.Color = colornames.Limegreen
@@ -110,6 +138,34 @@ func (s *SnakeGame) move() {
 		// update last move timestamp
 		s.lastMoveTime = time.Now()
 	}
+	if s.nextLevel() {
+		s.advanceLevel()
+	}
+}
+
+// check whether it should advance to next level
+func (s *SnakeGame) nextLevel() bool {
+	return s.score == s.level*AppleCnt
+}
+
+// advance to next level
+func (s *SnakeGame) advanceLevel() {
+	// TODO: check whether player wins
+
+	s.resetSnake()
+	s.setLevel(s.level + 1)
+}
+
+// reset state of snake
+func (s *SnakeGame) resetSnake() {
+	s.dir = East
+	s.body = []pixel.Vec{pixel.V(0, 0)}
+}
+
+// set game level
+func (s *SnakeGame) setLevel(level int) {
+	s.level = level
+	s.freq = frequencies[s.level]
 }
 
 // change direction
