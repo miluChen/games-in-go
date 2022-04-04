@@ -28,7 +28,7 @@ const (
 	Width    = 10 // width of the grid as in number of units
 	Height   = 10 // height of the grid as in number of units
 	MaxLevel = 10 // max game level
-	AppleCnt = 15 // number of apples to advance to next level
+	AppleCnt = 10 // number of apples to advance to next level
 )
 
 type SnakeGame struct {
@@ -36,12 +36,13 @@ type SnakeGame struct {
 	dir   Direction   // snake moving direction
 	body  []pixel.Vec // the coordinates of the whole snake
 
-	apple        pixel.Vec // position of the apple
-	score        int       // game score, as in number apples eaten
-	level        int       // game level
-	freq         int64     // the number of moves the snake can make per second
-	action       Direction // actions for changing direction
-	lastMoveTime time.Time // last timestamp the snake moved
+	apple          pixel.Vec // position of the apple
+	score          int       // game score, as in number apples eaten
+	level          int       // game level
+	freq           int64     // the number of moves the snake can make per second
+	action         Direction // action for changing direction
+	repeatedAction bool      // whether action is repeatedly pressed, if so, snake moves at max speed
+	lastMoveTime   time.Time // last timestamp the snake moved
 }
 
 var directions = map[Direction][]float64{
@@ -51,19 +52,8 @@ var directions = map[Direction][]float64{
 	West:  {-1, 0},
 }
 
-// mapping from game level to freq, i.e. number of moves the snake can make per second
-var frequencies = map[int]int64{
-	1:  1,
-	2:  2,
-	3:  3,
-	4:  4,
-	5:  5,
-	6:  6,
-	7:  7,
-	8:  8,
-	9:  9,
-	10: 10,
-}
+// mapping from game level to freq (index 0 is not used)
+var frequencies = []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
 func newSnakeGame() *SnakeGame {
 	snakeGame := &SnakeGame{
@@ -109,7 +99,13 @@ func (s *SnakeGame) draw(win *pixelgl.Window) {
 
 // snake moves
 func (s *SnakeGame) move() {
-	if time.Since(s.lastMoveTime).Milliseconds() > time.Second.Milliseconds()/s.freq {
+	freq := s.freq
+	if s.action == s.dir && s.repeatedAction {
+		// if a key is held, win.Repeated will return true, false, false, false, false, true, ...
+		// the max frequency is multipled by 5 to accommodate this
+		freq = frequencies[len(frequencies)-1] * 5
+	}
+	if time.Since(s.lastMoveTime).Milliseconds() > time.Second.Milliseconds()/freq {
 		// change direction if needed
 		s.dir = changeDirection(s.dir, s.action)
 		// advance head
@@ -138,13 +134,13 @@ func (s *SnakeGame) move() {
 		// update last move timestamp
 		s.lastMoveTime = time.Now()
 	}
-	if s.nextLevel() {
+	if s.passLevel() {
 		s.advanceLevel()
 	}
 }
 
 // check whether it should advance to next level
-func (s *SnakeGame) nextLevel() bool {
+func (s *SnakeGame) passLevel() bool {
 	return s.score == s.level*AppleCnt
 }
 

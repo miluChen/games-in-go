@@ -35,6 +35,18 @@ func (s *Scene) update(win *pixelgl.Window) {
 	} else if win.JustPressed(pixelgl.KeyUp) {
 		s.snakeGame.action = North
 	}
+
+	s.snakeGame.repeatedAction = false
+	if win.Repeated(pixelgl.KeyLeft) {
+		s.snakeGame.repeatedAction = true
+	} else if win.Repeated(pixelgl.KeyRight) {
+		s.snakeGame.repeatedAction = true
+	} else if win.Repeated(pixelgl.KeyDown) {
+		s.snakeGame.repeatedAction = true
+	} else if win.Repeated(pixelgl.KeyUp) {
+		s.snakeGame.repeatedAction = true
+	}
+
 	s.snakeGame.move()
 	if s.snakeGame.dead(win) {
 		s.active = false
