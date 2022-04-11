@@ -24,12 +24,14 @@ const (
 )
 
 const (
-	Unit     = 10 // size of a square
-	Width    = 10 // width of the grid as in number of units
-	Height   = 10 // height of the grid as in number of units
+	Unit     = 20 // size of a square
+	Width    = 15 // width of the grid as in number of units
+	Height   = 15 // height of the grid as in number of units
 	MaxLevel = 10 // max game level
-	AppleCnt = 10 // number of apples to advance to next level
+	AppleCnt = 3  // number of apples to advance to next level
 )
+
+var unitV = pixel.V(Unit, Unit)
 
 type SnakeGame struct {
 	alive bool        // whether the snake is still alive
@@ -69,29 +71,55 @@ func newSnakeGame() *SnakeGame {
 
 // draw the snake and apple in window
 func (s *SnakeGame) draw(win *pixelgl.Window) {
-	// draw level txt
+	// draw level txt and display score
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 	txt := text.New(pixel.V(100, 700), atlas)
 	txt.Color = colornames.Black
-	fmt.Fprintf(txt, "Level %d", s.level)
+	fmt.Fprintf(txt, "Level %d: %d", s.level, s.score)
+	// compute offset, which is the lower left boundary of the allowed area
+	offsetX := (win.Bounds().W() - (Width+1)*Unit) / 2
+	offsetY := (win.Bounds().H() - txt.Bounds().H() - (Height)*Unit) / 2
+	offset := pixel.V(offsetX, offsetY)
 	// position level txt in top center
 	txt.Draw(win, pixel.IM.Moved(win.Bounds().Center().Sub(txt.Bounds().Center()).Add(pixel.V(0, win.Bounds().H()/2-txt.Bounds().H()/2))))
-	// draw snake body and head
+	// draw wall
 	imd := imdraw.New(nil)
+	imd.Color = colornames.Coral
+	for i := -1; i < Width+1; i++ {
+		v := pixel.V(float64(i*Unit), -Unit)
+		imd.Push(v.Add(offset))
+		imd.Push(v.Add(unitV).Add(offset))
+		imd.Rectangle(0)
+		v = pixel.V(float64(i*Unit), float64((Height)*Unit))
+		imd.Push(v.Add(offset))
+		imd.Push(v.Add(unitV).Add(offset))
+		imd.Rectangle(0)
+	}
+	for i := 0; i < Height; i++ {
+		v := pixel.V(-Unit, float64(i*Unit))
+		imd.Push(v.Add(offset))
+		imd.Push(v.Add(unitV).Add(offset))
+		imd.Rectangle(0)
+		v = pixel.V(float64((Width)*Unit), float64(i*Unit))
+		imd.Push(v.Add(offset))
+		imd.Push(v.Add(unitV).Add(offset))
+		imd.Rectangle(0)
+	}
+	// draw snake body and head
 	imd.Color = colornames.Limegreen
 	for i := 0; i < len(s.body)-1; i++ {
-		imd.Push(pixel.V(s.body[i].X*Unit, s.body[i].Y*Unit))
-		imd.Push(pixel.V((s.body[i].X+1)*Unit, (s.body[i].Y+1)*Unit))
+		imd.Push(pixel.V(s.body[i].X*Unit, s.body[i].Y*Unit).Add(offset))
+		imd.Push(pixel.V((s.body[i].X+1)*Unit, (s.body[i].Y+1)*Unit).Add(offset))
 		imd.Rectangle(0)
 	}
 	imd.Color = colornames.Purple
-	imd.Push(pixel.V(s.body[len(s.body)-1].X*Unit, s.body[len(s.body)-1].Y*Unit))
-	imd.Push(pixel.V((s.body[len(s.body)-1].X+1)*Unit, (s.body[len(s.body)-1].Y+1)*Unit))
+	imd.Push(pixel.V(s.body[len(s.body)-1].X*Unit, s.body[len(s.body)-1].Y*Unit).Add(offset))
+	imd.Push(pixel.V((s.body[len(s.body)-1].X+1)*Unit, (s.body[len(s.body)-1].Y+1)*Unit).Add(offset))
 	imd.Rectangle(0)
 	// draw apple
 	imd.Color = colornames.Red
-	imd.Push(pixel.V(s.apple.X*Unit, s.apple.Y*Unit))
-	imd.Push(pixel.V((s.apple.X+1)*Unit, (s.apple.Y+1)*Unit))
+	imd.Push(pixel.V(s.apple.X*Unit, s.apple.Y*Unit).Add(offset))
+	imd.Push(pixel.V((s.apple.X+1)*Unit, (s.apple.Y+1)*Unit).Add(offset))
 	imd.Rectangle(0)
 
 	imd.Draw(win)
@@ -155,7 +183,7 @@ func (s *SnakeGame) advanceLevel() {
 // reset state of snake
 func (s *SnakeGame) resetSnake() {
 	s.dir = East
-	s.body = []pixel.Vec{pixel.V(0, 0)}
+	s.body = []pixel.Vec{pixel.V(0, 0), pixel.V(1, 0), pixel.V(2, 0)}
 }
 
 // set game level

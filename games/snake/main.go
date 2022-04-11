@@ -33,7 +33,7 @@ func run() {
 	// initialize window
 	cfg := pixelgl.WindowConfig{
 		Title:  "snake",
-		Bounds: pixel.R(0, 0, 1024, 768),
+		Bounds: pixel.R(0, 0, 500, 400),
 		VSync:  true,
 	}
 	win, err := pixelgl.NewWindow(cfg)

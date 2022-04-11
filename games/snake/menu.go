@@ -3,6 +3,7 @@ package snake
 import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"golang.org/x/image/colornames"
 )
 
 /* ========== menu definition ========== */
@@ -16,6 +17,7 @@ func newMenu() *Menu {
 }
 
 func (m *Menu) draw(win *pixelgl.Window) {
+	win.Clear(colornames.Gray)
 	for i, button := range m.buttons {
 		highlight := i == m.buttonIndex
 		button.draw(win, highlight)
@@ -73,13 +75,13 @@ func initMenus() {
 func createMainMenu() *Menu {
 	menu := newMenu()
 	// add buttons for main menu
-	rect := pixel.Rect{Min: pixel.V(300, 500), Max: pixel.V(400, 530)}
+	rect := pixel.Rect{Min: pixel.V(200, 350), Max: pixel.V(300, 380)}
 	menu.addButton(newRectButton(rect, newGameButtonName, false, newGameHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 460), Max: pixel.V(400, 490)}
+	rect = pixel.Rect{Min: pixel.V(200, 310), Max: pixel.V(300, 340)}
 	menu.addButton(newRectButton(rect, leaderBoardButtonName, false, leaderboardHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 420), Max: pixel.V(400, 450)}
+	rect = pixel.Rect{Min: pixel.V(200, 270), Max: pixel.V(300, 300)}
 	menu.addButton(newRectButton(rect, optionsButtonName, false, optionsHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 380), Max: pixel.V(400, 410)}
+	rect = pixel.Rect{Min: pixel.V(200, 230), Max: pixel.V(300, 260)}
 	menu.addButton(newRectButton(rect, exitButtonName, false, exitHandler))
 	return menu
 }
@@ -87,7 +89,7 @@ func createMainMenu() *Menu {
 func createLeaderBoardMenu() *Menu {
 	menu := newMenu()
 	// add buttons for leaderboard menu
-	rect := pixel.Rect{Min: pixel.V(300, 340), Max: pixel.V(400, 370)}
+	rect := pixel.Rect{Min: pixel.V(200, 230), Max: pixel.V(300, 260)}
 	menu.addButton(newRectButton(rect, backButtonName, false, backHandler))
 	return menu
 }
@@ -95,7 +97,7 @@ func createLeaderBoardMenu() *Menu {
 func createOptionsMenu() *Menu {
 	menu := newMenu()
 	// add buttons for options menu
-	rect := pixel.Rect{Min: pixel.V(300, 340), Max: pixel.V(400, 370)}
+	rect := pixel.Rect{Min: pixel.V(200, 230), Max: pixel.V(300, 260)}
 	menu.addButton(newRectButton(rect, backButtonName, false, backHandler))
 	return menu
 }
@@ -103,15 +105,15 @@ func createOptionsMenu() *Menu {
 func createPauseMenu() *Menu {
 	menu := newMenu()
 	// add buttons for pause menu
-	rect := pixel.Rect{Min: pixel.V(300, 540), Max: pixel.V(400, 570)}
+	rect := pixel.Rect{Min: pixel.V(200, 350), Max: pixel.V(300, 380)}
 	menu.addButton(newRectButton(rect, pausedButtonName, true, nil))
-	rect = pixel.Rect{Min: pixel.V(300, 500), Max: pixel.V(400, 530)}
+	rect = pixel.Rect{Min: pixel.V(200, 310), Max: pixel.V(300, 340)}
 	menu.addButton(newRectButton(rect, resumeButtonName, false, resumeHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 460), Max: pixel.V(400, 490)}
+	rect = pixel.Rect{Min: pixel.V(200, 270), Max: pixel.V(300, 300)}
 	menu.addButton(newRectButton(rect, restartButtonName, false, restartHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 420), Max: pixel.V(400, 450)}
+	rect = pixel.Rect{Min: pixel.V(200, 230), Max: pixel.V(300, 260)}
 	menu.addButton(newRectButton(rect, optionsButtonName, false, optionsHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 380), Max: pixel.V(400, 410)}
+	rect = pixel.Rect{Min: pixel.V(200, 190), Max: pixel.V(300, 220)}
 	menu.addButton(newRectButton(rect, exitButtonName, false, exitHandler))
 	return menu
 }
@@ -119,11 +121,11 @@ func createPauseMenu() *Menu {
 func createGameOverMenu() *Menu {
 	menu := newMenu()
 	// add buttons for pause menu
-	rect := pixel.Rect{Min: pixel.V(300, 500), Max: pixel.V(400, 530)}
+	rect := pixel.Rect{Min: pixel.V(200, 350), Max: pixel.V(300, 380)}
 	menu.addButton(newRectButton(rect, retryButtonName, false, retryHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 460), Max: pixel.V(400, 490)}
+	rect = pixel.Rect{Min: pixel.V(200, 310), Max: pixel.V(300, 340)}
 	menu.addButton(newRectButton(rect, mainMenuButtonName, false, mainMenuHandler))
-	rect = pixel.Rect{Min: pixel.V(300, 380), Max: pixel.V(400, 410)}
+	rect = pixel.Rect{Min: pixel.V(200, 230), Max: pixel.V(300, 260)}
 	menu.addButton(newRectButton(rect, exitButtonName, false, exitHandler))
 	return menu
 }
