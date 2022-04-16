@@ -44,7 +44,7 @@ func (b *RectButton) draw(win *pixelgl.Window, highlight bool) {
 	txt.Dot.X -= txt.BoundsOf(b.msg).W() / 2
 	txt.Dot.Y -= txt.BoundsOf(b.msg).H() / 4
 	if b.disabled {
-		txt.Color = colornames.Gray
+		txt.Color = colornames.Silver
 	} else {
 		// highlight the text if it's chosen
 		if highlight {

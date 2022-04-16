@@ -28,12 +28,16 @@ func (s *Scene) update(win *pixelgl.Window) {
 
 	if win.JustPressed(pixelgl.KeyLeft) {
 		s.snakeGame.action = West
+		s.snakeGame.state = Moving
 	} else if win.JustPressed(pixelgl.KeyRight) {
 		s.snakeGame.action = East
+		s.snakeGame.state = Moving
 	} else if win.JustPressed(pixelgl.KeyDown) {
 		s.snakeGame.action = South
+		s.snakeGame.state = Moving
 	} else if win.JustPressed(pixelgl.KeyUp) {
 		s.snakeGame.action = North
+		s.snakeGame.state = Moving
 	}
 
 	s.snakeGame.repeatedAction = false

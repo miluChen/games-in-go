@@ -23,6 +23,13 @@ const (
 	West
 )
 
+type snakeState int
+
+const (
+	Idle snakeState = iota
+	Moving
+)
+
 const (
 	Unit     = 20 // size of a square
 	Width    = 15 // width of the grid as in number of units
@@ -37,6 +44,7 @@ type SnakeGame struct {
 	alive bool        // whether the snake is still alive
 	dir   Direction   // snake moving direction
 	body  []pixel.Vec // the coordinates of the whole snake
+	state snakeState  // state indicates whether the snake should is moving
 
 	apple          pixel.Vec // position of the apple
 	score          int       // game score, as in number apples eaten
@@ -127,6 +135,9 @@ func (s *SnakeGame) draw(win *pixelgl.Window) {
 
 // snake moves
 func (s *SnakeGame) move() {
+	if s.state == Idle {
+		return
+	}
 	freq := s.freq
 	if s.action == s.dir && s.repeatedAction {
 		// if a key is held, win.Repeated will return true, false, false, false, false, true, ...
@@ -183,6 +194,7 @@ func (s *SnakeGame) advanceLevel() {
 // reset state of snake
 func (s *SnakeGame) resetSnake() {
 	s.dir = East
+	s.state = Idle // snake starts as idle, waiting from command
 	s.body = []pixel.Vec{pixel.V(0, Height/2), pixel.V(1, Height/2), pixel.V(2, Height/2)}
 }
 
