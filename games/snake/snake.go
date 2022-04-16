@@ -183,7 +183,7 @@ func (s *SnakeGame) advanceLevel() {
 // reset state of snake
 func (s *SnakeGame) resetSnake() {
 	s.dir = East
-	s.body = []pixel.Vec{pixel.V(0, 0), pixel.V(1, 0), pixel.V(2, 0)}
+	s.body = []pixel.Vec{pixel.V(0, Height/2), pixel.V(1, Height/2), pixel.V(2, Height/2)}
 }
 
 // set game level
