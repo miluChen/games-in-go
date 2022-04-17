@@ -1,8 +1,11 @@
 package snake
 
 import (
+	"log"
+
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/miluChen/games-in-go/games/snake/db"
 	"golang.org/x/image/colornames"
 )
 
@@ -21,6 +24,18 @@ func initialize(win *pixelgl.Window) {
 	currentScene = nil
 	// application starts, push main menu to menuStack
 	initMenus(win)
+	// open DB
+	err := db.Open()
+	if err != nil {
+		log.Printf("open db failed: %v\n", err)
+		return
+	}
+}
+
+func close() {
+	if err := db.Close(); err != nil {
+		log.Printf("close db failed: %v\n", err)
+	}
 }
 
 func startGame() {
@@ -55,6 +70,7 @@ func run() {
 
 		win.Update()
 	}
+	close()
 }
 
 func Run() {
