@@ -20,7 +20,7 @@ func initialize(win *pixelgl.Window) {
 	gameState = InGame
 	currentScene = nil
 	// application starts, push main menu to menuStack
-	initMenus()
+	initMenus(win)
 }
 
 func startGame() {

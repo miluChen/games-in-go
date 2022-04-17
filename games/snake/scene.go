@@ -25,6 +25,12 @@ func (s *Scene) update(win *pixelgl.Window) {
 		menuStack = append(menuStack, pauseMenu)
 		return
 	}
+	// check whether player has won
+	if s.snakeGame.won {
+		s.active = false
+		menuStack = append(menuStack, winMenu)
+		return
+	}
 
 	if win.JustPressed(pixelgl.KeyLeft) {
 		s.snakeGame.action = West

@@ -82,6 +82,7 @@ const (
 	resumeButtonName      = "Resume"
 	restartButtonName     = "Restart"
 	retryButtonName       = "Retry"
+	playAgainButtonName   = "Play Again"
 	backButtonName        = "Back"
 	pausedButtonName      = "Paused"
 	mainMenuButtonName    = "Main Menu"
@@ -114,6 +115,10 @@ func restartHandler() {
 }
 
 func retryHandler() {
+	startGame()
+}
+
+func playAgainHandler() {
 	startGame()
 }
 

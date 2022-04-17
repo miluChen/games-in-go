@@ -45,6 +45,7 @@ type SnakeGame struct {
 	dir   Direction   // snake moving direction
 	body  []pixel.Vec // the coordinates of the whole snake
 	state snakeState  // state indicates whether the snake should is moving
+	won   bool        // whether play has won
 
 	apple          pixel.Vec // position of the apple
 	score          int       // game score, as in number apples eaten
@@ -70,6 +71,7 @@ func newSnakeGame() *SnakeGame {
 		alive:        true,
 		action:       East,
 		lastMoveTime: time.Now(),
+		won:          false,
 	}
 	snakeGame.setLevel(1)
 	snakeGame.resetSnake()
@@ -185,7 +187,10 @@ func (s *SnakeGame) passLevel() bool {
 
 // advance to next level
 func (s *SnakeGame) advanceLevel() {
-	// TODO: check whether player wins
+	if s.level == MaxLevel {
+		s.won = true
+		return
+	}
 
 	s.resetSnake()
 	s.setLevel(s.level + 1)
