@@ -22,14 +22,14 @@ var currentScene *Scene
 func initialize(win *pixelgl.Window) {
 	gameState = InGame
 	currentScene = nil
-	// application starts, push main menu to menuStack
-	initMenus(win)
 	// open DB
 	err := db.Open()
 	if err != nil {
 		log.Printf("open db failed: %v\n", err)
 		return
 	}
+	// application starts, push main menu to menuStack
+	initMenus(win)
 }
 
 func close() {

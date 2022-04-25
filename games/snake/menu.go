@@ -6,6 +6,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
+	"github.com/miluChen/games-in-go/games/snake/db"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
 )
@@ -79,7 +80,7 @@ var menuStack []*Menu
 
 func initMenus(win *pixelgl.Window) {
 	mainMenu = createMainMenu()
-	leaderboardMenu = createLeaderBoardMenu()
+	leaderboardMenu = createLeaderBoardMenu(win)
 	optionsMenu = createOptionsMenu()
 	pauseMenu = createPauseMenu()
 	gameOverMenu = createGameOverMenu()
@@ -102,10 +103,28 @@ func createMainMenu() *Menu {
 	return menu
 }
 
-func createLeaderBoardMenu() *Menu {
+func createLeaderBoardMenu(win *pixelgl.Window) *Menu {
 	menu := newMenu()
+	// read from db and draw leaderboard
+	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
+	txt := text.New(pixel.V(100, 700), atlas)
+	txt.Color = colornames.Green
+	fmt.Fprintln(txt, "Leaderboard")
+	matrix := pixel.IM.Moved(win.Bounds().Center().Sub(txt.Bounds().Center()).Add(pixel.V(0, win.Bounds().H()/2-txt.Bounds().H()/2)))
+	menu.addText(txt, matrix)
+
+	names, err := db.Read()
+	if err != nil {
+		txt.Color = colornames.Red
+		fmt.Fprintf(txt, "err: %s\n", err.Error())
+	} else {
+		txt.Color = colornames.Greenyellow
+		for i, name := range names {
+			fmt.Fprintf(txt, "%d\t%s\n", i+1, name)
+		}
+	}
 	// add buttons for leaderboard menu
-	rect := pixel.Rect{Min: pixel.V(200, 230), Max: pixel.V(300, 260)}
+	rect := pixel.Rect{Min: pixel.V(200, 190), Max: pixel.V(300, 220)}
 	menu.addButton(newRectButton(rect, backButtonName, false, backHandler))
 	return menu
 }
