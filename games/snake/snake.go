@@ -34,8 +34,8 @@ const (
 	Unit     = 20 // size of a square
 	Width    = 15 // width of the grid as in number of units
 	Height   = 15 // height of the grid as in number of units
-	MaxLevel = 10 // max game level
-	AppleCnt = 3  // number of apples to advance to next level
+	MaxLevel = 1  // max game level
+	AppleCnt = 1  // number of apples to advance to next level
 )
 
 var unitV = pixel.V(Unit, Unit)

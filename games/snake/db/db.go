@@ -6,7 +6,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const dbName = "./game.db"
+const dbName = "./.game.db"
 
 var gameDB *sql.DB
 

@@ -29,6 +29,7 @@ func (s *Scene) update(win *pixelgl.Window) {
 	if s.snakeGame.won {
 		s.active = false
 		menuStack = append(menuStack, winMenu)
+		menuStack = append(menuStack, inputNameMenu)
 		return
 	}
 

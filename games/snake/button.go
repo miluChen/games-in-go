@@ -2,11 +2,13 @@ package snake
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
+	"github.com/miluChen/games-in-go/games/snake/db"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
 )
@@ -86,6 +88,8 @@ const (
 	backButtonName        = "Back"
 	pausedButtonName      = "Paused"
 	mainMenuButtonName    = "Main Menu"
+	cancelButtonName      = "Cancel"
+	confirmButtonName     = "Confirm"
 )
 
 /* ================ callbacks for buttons ================ */
@@ -133,4 +137,24 @@ func mainMenuHandler() {
 	menuStack = append(menuStack, mainMenu)
 	// remove current scene
 	currentScene = nil
+}
+
+func cancelHandler() {
+	// reset input box
+	inputNameMenu.inputBox.reset()
+	// pop menu
+	menuStack = menuStack[0 : len(menuStack)-1]
+}
+
+func confirmHandler() {
+	// write data into database
+	name := strings.TrimSpace(inputNameMenu.inputBox.input)
+	inputNameMenu.inputBox.reset()
+	if len(name) > 0 {
+		db.Insert(name)
+	}
+	// reset input box
+	inputNameMenu.inputBox.reset()
+	// pop menu
+	menuStack = menuStack[0 : len(menuStack)-1]
 }

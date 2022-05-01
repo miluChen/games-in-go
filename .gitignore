@@ -15,4 +15,4 @@
 # vendor/
 
 # DB file
-game.db
+.game.db

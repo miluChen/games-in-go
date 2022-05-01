@@ -17,6 +17,7 @@ type Menu struct {
 	buttons      []Button
 	texts        []*text.Text
 	textMatrices []pixel.Matrix
+	inputBox     *InputBox // there is only one possible input box
 }
 
 func newMenu() *Menu {
@@ -32,6 +33,10 @@ func (m *Menu) draw(win *pixelgl.Window) {
 	for i, text := range m.texts {
 		text.Draw(win, m.textMatrices[i])
 	}
+	if m.inputBox != nil {
+		// if buttonIndex is -1, it means input box is activated
+		m.inputBox.draw(win, m.buttonIndex == -1)
+	}
 }
 
 func (m *Menu) addButton(button Button) {
@@ -43,18 +48,26 @@ func (m *Menu) addText(text *text.Text, matrix pixel.Matrix) {
 	m.textMatrices = append(m.textMatrices, matrix)
 }
 
+func (m *Menu) setInputBox(inputBox *InputBox) {
+	m.inputBox = inputBox
+}
+
 // handleEvent handles user input, it should be called before Draw
 func (m *Menu) handleEvent(win *pixelgl.Window) {
-	if win.JustPressed(pixelgl.KeyEnter) {
-		if m.buttonIndex >= 0 && m.buttonIndex < len(m.buttons) {
-			m.buttons[m.buttonIndex].handle()
-		}
-		return
-	}
 	if win.JustPressed(pixelgl.KeyDown) {
 		m.buttonIndex = min(m.buttonIndex+1, len(m.buttons)-1)
 	} else if win.JustPressed(pixelgl.KeyUp) {
-		m.buttonIndex = max(0, m.buttonIndex-1)
+		if m.inputBox == nil {
+			m.buttonIndex = max(0, m.buttonIndex-1)
+		} else {
+			m.buttonIndex = max(-1, m.buttonIndex-1)
+		}
+	} else if win.JustPressed(pixelgl.KeyEnter) {
+		if m.buttonIndex >= 0 && m.buttonIndex < len(m.buttons) {
+			m.buttons[m.buttonIndex].handle()
+		}
+	} else if m.buttonIndex == -1 {
+		m.inputBox.handle(win)
 	}
 }
 
@@ -75,6 +88,7 @@ var optionsMenu *Menu
 var pauseMenu *Menu
 var gameOverMenu *Menu
 var winMenu *Menu
+var inputNameMenu *Menu
 
 var menuStack []*Menu
 
@@ -85,6 +99,7 @@ func initMenus(win *pixelgl.Window) {
 	pauseMenu = createPauseMenu()
 	gameOverMenu = createGameOverMenu()
 	winMenu = createWinMenu(win)
+	inputNameMenu = createInputNameMenu(win)
 
 	menuStack = append(menuStack, mainMenu)
 }
@@ -179,6 +194,30 @@ func createWinMenu(win *pixelgl.Window) *Menu {
 	menu.addButton(newRectButton(rect, playAgainButtonName, false, playAgainHandler))
 	rect = pixel.Rect{Min: pixel.V(200, 270), Max: pixel.V(300, 300)}
 	menu.addButton(newRectButton(rect, mainMenuButtonName, false, mainMenuHandler))
+	return menu
+}
+
+func createInputNameMenu(win *pixelgl.Window) *Menu {
+	menu := newMenu()
+	// add win text
+	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
+	txt := text.New(pixel.V(100, 700), atlas)
+	txt.Color = colornames.Red
+	fmt.Fprintf(txt, "You Win! Your Name:\n")
+	matrix := pixel.IM.Moved(win.Bounds().Center().Sub(txt.Bounds().Center()).Add(pixel.V(0, win.Bounds().H()/2-txt.Bounds().H()/2)))
+	menu.addText(txt, matrix)
+	// add input box
+	rect := pixel.Rect{Min: pixel.V(200, 350), Max: pixel.V(300, 380)}
+	menu.setInputBox(newInputBox(rect))
+	// add other buttons
+	rect = pixel.Rect{Min: pixel.V(200, 270), Max: pixel.V(300, 300)}
+	menu.addButton(newRectButton(rect, cancelButtonName, false, cancelHandler))
+	rect = pixel.Rect{Min: pixel.V(200, 230), Max: pixel.V(300, 260)}
+	menu.addButton(newRectButton(rect, confirmButtonName, false, confirmHandler))
+
+	// set button index to -1
+	menu.buttonIndex = -1
+
 	return menu
 }
 
