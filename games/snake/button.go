@@ -17,8 +17,7 @@ import (
 type Button interface {
 	draw(*pixelgl.Window, bool)
 	handle()
-	disable()
-	enable()
+	contains(pixel.Vec) bool
 }
 
 type RectButton struct {
@@ -61,18 +60,14 @@ func (b *RectButton) draw(win *pixelgl.Window, highlight bool) {
 	txt.Draw(win, pixel.IM)
 }
 
+func (b *RectButton) contains(cursor pixel.Vec) bool {
+	return b.rect.Contains(cursor)
+}
+
 func (b *RectButton) handle() {
 	if !b.disabled {
 		b.handler()
 	}
-}
-
-func (b *RectButton) disable() {
-	b.disabled = true
-}
-
-func (b *RectButton) enable() {
-	b.disabled = false
 }
 
 /* ================ button names ================ */
@@ -141,20 +136,21 @@ func mainMenuHandler() {
 
 func cancelHandler() {
 	// reset input box
-	inputNameMenu.inputBox.reset()
+	for _, inputBox := range inputNameMenu.inputBoxes {
+		inputBox.reset()
+	}
 	// pop menu
 	menuStack = menuStack[0 : len(menuStack)-1]
 }
 
 func confirmHandler() {
 	// write data into database
-	name := strings.TrimSpace(inputNameMenu.inputBox.input)
-	inputNameMenu.inputBox.reset()
+	name := strings.TrimSpace(inputNameMenu.inputBoxes[0].input)
 	if len(name) > 0 {
 		db.Insert(name)
 	}
 	// reset input box
-	inputNameMenu.inputBox.reset()
+	inputNameMenu.inputBoxes[0].reset()
 	// pop menu
 	menuStack = menuStack[0 : len(menuStack)-1]
 }

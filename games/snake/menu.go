@@ -17,7 +17,9 @@ type Menu struct {
 	buttons      []Button
 	texts        []*text.Text
 	textMatrices []pixel.Matrix
-	inputBox     *InputBox // there is only one possible input box
+	inputBoxes   []*InputBox
+
+	isLeaderBoard bool // leader board menu needs to read from DB every time
 }
 
 func newMenu() *Menu {
@@ -26,16 +28,16 @@ func newMenu() *Menu {
 
 func (m *Menu) draw(win *pixelgl.Window) {
 	win.Clear(colornames.Gray)
-	for i, button := range m.buttons {
-		highlight := i == m.buttonIndex
+	cursor := win.MousePosition()
+	for _, button := range m.buttons {
+		highlight := button.contains(cursor)
 		button.draw(win, highlight)
 	}
 	for i, text := range m.texts {
 		text.Draw(win, m.textMatrices[i])
 	}
-	if m.inputBox != nil {
-		// if buttonIndex is -1, it means input box is activated
-		m.inputBox.draw(win, m.buttonIndex == -1)
+	for _, inputBox := range m.inputBoxes {
+		inputBox.draw(win)
 	}
 }
 
@@ -49,29 +51,51 @@ func (m *Menu) addText(text *text.Text, matrix pixel.Matrix) {
 }
 
 func (m *Menu) setInputBox(inputBox *InputBox) {
-	m.inputBox = inputBox
+	m.inputBoxes = append(m.inputBoxes, inputBox)
 }
 
-// handleEvent handles user input, it should be called before Draw
+// handleEvent handles user input, it should be called before Draw.
 func (m *Menu) handleEvent(win *pixelgl.Window) {
-	if win.JustPressed(pixelgl.KeyDown) {
-		m.buttonIndex = min(m.buttonIndex+1, len(m.buttons)-1)
-	} else if win.JustPressed(pixelgl.KeyUp) {
-		if m.inputBox == nil {
-			m.buttonIndex = max(0, m.buttonIndex-1)
-		} else {
-			m.buttonIndex = max(-1, m.buttonIndex-1)
+	if win.JustPressed(pixelgl.MouseButtonLeft) {
+		cursor := win.MousePosition()
+		// check whether button is clicked
+		for _, button := range m.buttons {
+			if button.contains(cursor) {
+				button.handle()
+				return
+			}
 		}
-	} else if win.JustPressed(pixelgl.KeyEnter) {
-		if m.buttonIndex >= 0 && m.buttonIndex < len(m.buttons) {
-			m.buttons[m.buttonIndex].handle()
+		// check whether input box is chosen
+		index := -1
+		for i, inputBox := range m.inputBoxes {
+			if inputBox.rect.Contains(cursor) {
+				index = i
+				break
+			}
 		}
-	} else if m.buttonIndex == -1 {
-		m.inputBox.handle(win)
+		if index != -1 {
+			for i, inputBox := range m.inputBoxes {
+				if i == index {
+					inputBox.activate()
+				} else {
+					inputBox.deactivate()
+				}
+			}
+		}
+	} else {
+		for _, inputBox := range m.inputBoxes {
+			if inputBox.activated {
+				inputBox.handle(win)
+				return
+			}
+		}
 	}
 }
 
 func (m *Menu) update(win *pixelgl.Window) {
+	if m.isLeaderBoard {
+		generateLeaderBoard(win, m)
+	}
 	m.handleEvent(win)
 	m.draw(win)
 }
@@ -120,12 +144,24 @@ func createMainMenu() *Menu {
 
 func createLeaderBoardMenu(win *pixelgl.Window) *Menu {
 	menu := newMenu()
+	menu.isLeaderBoard = true
+	generateLeaderBoard(win, menu)
+	// add buttons for leaderboard menu
+	rect := pixel.Rect{Min: pixel.V(200, 190), Max: pixel.V(300, 220)}
+	menu.addButton(newRectButton(rect, backButtonName, false, backHandler))
+	return menu
+}
+
+func generateLeaderBoard(win *pixelgl.Window, menu *Menu) {
 	// read from db and draw leaderboard
 	atlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 	txt := text.New(pixel.V(100, 700), atlas)
 	txt.Color = colornames.Green
 	fmt.Fprintln(txt, "Leaderboard")
 	matrix := pixel.IM.Moved(win.Bounds().Center().Sub(txt.Bounds().Center()).Add(pixel.V(0, win.Bounds().H()/2-txt.Bounds().H()/2)))
+
+	menu.texts = nil
+	menu.textMatrices = nil
 	menu.addText(txt, matrix)
 
 	names, err := db.Read()
@@ -138,10 +174,6 @@ func createLeaderBoardMenu(win *pixelgl.Window) *Menu {
 			fmt.Fprintf(txt, "%d\t%s\n", i+1, name)
 		}
 	}
-	// add buttons for leaderboard menu
-	rect := pixel.Rect{Min: pixel.V(200, 190), Max: pixel.V(300, 220)}
-	menu.addButton(newRectButton(rect, backButtonName, false, backHandler))
-	return menu
 }
 
 func createOptionsMenu() *Menu {

@@ -28,11 +28,12 @@ var chars = []pixelgl.Button{
 }
 
 type InputBox struct {
-	input    string
-	curPos   int
-	capsLock bool
-	rect     pixel.Rect
-	imd      *imdraw.IMDraw
+	input     string
+	curPos    int
+	activated bool
+	capsLock  bool
+	rect      pixel.Rect
+	imd       *imdraw.IMDraw
 }
 
 func newInputBox(rect pixel.Rect) *InputBox {
@@ -48,6 +49,15 @@ func newInputBox(rect pixel.Rect) *InputBox {
 func (ui *InputBox) reset() {
 	ui.input = ""
 	ui.curPos = 0
+	ui.activated = false
+}
+
+func (ui *InputBox) activate() {
+	ui.activated = true
+}
+
+func (ui *InputBox) deactivate() {
+	ui.activated = false
 }
 
 func (ui *InputBox) handle(win *pixelgl.Window) {
@@ -72,7 +82,7 @@ func (ui *InputBox) handle(win *pixelgl.Window) {
 	}
 }
 
-func (ui *InputBox) draw(win *pixelgl.Window, activated bool) {
+func (ui *InputBox) draw(win *pixelgl.Window) {
 	// draw rectangle box
 	ui.imd.Draw(win)
 	// draw input text
@@ -83,7 +93,7 @@ func (ui *InputBox) draw(win *pixelgl.Window, activated bool) {
 	fmt.Fprint(txt, ui.input)
 	txt.Draw(win, pixel.IM)
 	// draw cursor if input box is activated
-	if activated {
+	if ui.activated {
 		cursor := imdraw.New(nil)
 		cursor.Color = colornames.Gray
 		cursor.Push(pixel.V(txt.Dot.X, ui.rect.Min.Y))
