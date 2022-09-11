@@ -8,7 +8,7 @@ import (
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
-	"github.com/miluChen/games-in-go/games/snake/db"
+	"github.com/miluchen/games-in-go/games/snake/db"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
 )

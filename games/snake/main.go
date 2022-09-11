@@ -5,7 +5,7 @@ import (
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/miluChen/games-in-go/games/snake/db"
+	"github.com/miluchen/games-in-go/games/snake/db"
 	"golang.org/x/image/colornames"
 )
 

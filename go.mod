@@ -1,4 +1,4 @@
-module github.com/miluChen/games-in-go
+module github.com/miluchen/games-in-go
 
 go 1.16
 

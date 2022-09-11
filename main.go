@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/miluChen/games-in-go/games/snake"
+	"github.com/miluchen/games-in-go/games/snake"
 )
 
 const (
